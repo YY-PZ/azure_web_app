@@ -47,7 +47,7 @@ async def get_db():
     try:
         yield db
     finally:
-        await db.close()  # Закриваємо сесію асинхронно
+        await db.close() 
 
 
 @app.get("/", response_class=HTMLResponse)
