@@ -19,7 +19,7 @@ if os.getenv("WEBSITE_HOSTNAME"):
 
         # Properly format the URL for SQLAlchemy
         sql_url = (
-            f"postgresql+asyncpg://{(details['user'])}:{quote_plus(details['password'])}"
+            f"postgresql://{(details['user'])}:{quote_plus(details['password'])}"
             f"@{details['host']}:{details['port']}/{details['dbname']}?sslmode={details['sslmode']}"
         )
 
