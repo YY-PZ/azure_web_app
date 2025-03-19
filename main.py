@@ -8,29 +8,29 @@ import logging
 from urllib.parse import quote_plus
 import os
 
+from sqlalchemy.engine.url import make_url
+
 logger = logging.getLogger("app")
 logger.setLevel(logging.INFO)
 
-# DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost/db")
 sql_url = ""
 if os.getenv("WEBSITE_HOSTNAME"):
-    logger.info("Connecting to Azure PostgreSQL Flexible server based on AZURE_POSTGRESQL_CONNECTIONSTRING...")
+    logger.info("Connecting to Azure PostgreSQL Flexible server...")
     env_connection_string = os.getenv("AZURE_POSTGRESQL_CONNECTIONSTRING")
-    if env_connection_string is None:
-        logger.info("Missing environment variable AZURE_POSTGRESQL_CONNECTIONSTRING")
+    
+    if not env_connection_string:
+        logger.error("Missing environment variable AZURE_POSTGRESQL_CONNECTIONSTRING")
     else:
-        # Parse the connection string
-        details = dict(item.split('=') for item in env_connection_string.split())
-
-        # Properly format the URL for SQLAlchemy
-        sql_url = (
-            f"postgresql+asyncpg://{    (details['user'])}:{quote_plus(details['password'])}"
-            f"@{details['host']}:{details['port']}/{details['dbname']}?sslmode={details['sslmode']}"
-        )
-
+        try:
+            parsed_url = make_url(env_connection_string)
+            sql_url = f"postgresql+asyncpg://{parsed_url.username}:{parsed_url.password}@{parsed_url.host}:{parsed_url.port}/{parsed_url.database}?sslmode=require"
+        except Exception as e:
+            logger.error(f"Error parsing connection string: {e}")
 else:
-    logger.info("Connecting to local PostgreSQL server based on .env file...")    
+    logger.info("Connecting to local PostgreSQL server...")    
     sql_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost/db")
+
+# Створення двигуна бази даних
 engine = create_async_engine(sql_url, echo=True)
 SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
