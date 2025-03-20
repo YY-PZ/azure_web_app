@@ -17,20 +17,30 @@ sql_url = ""
 if os.getenv("WEBSITE_HOSTNAME"):
     logger.info("Connecting to Azure PostgreSQL Flexible server...")
     env_connection_string = os.getenv("AZURE_POSTGRESQL_CONNECTIONSTRING")
-    
+
     if not env_connection_string:
         logger.error("Missing environment variable AZURE_POSTGRESQL_CONNECTIONSTRING")
     else:
         try:
-            parsed_url = make_url(env_connection_string)
-            sql_url = f"postgresql+asyncpg://{parsed_url.username}:{parsed_url.password}@{parsed_url.host}:{parsed_url.port}/{parsed_url.database}?sslmode=require"
+            # Розбиваємо рядок підключення
+            conn_parts = dict(item.split('=') for item in env_connection_string.split())
+
+            # Формуємо SQLAlchemy-сумісний URL
+            sql_url = (
+                f"postgresql+asyncpg://{conn_parts['user']}:{quote_plus(conn_parts['password'])}"
+                f"@{conn_parts['host']}:{conn_parts['port']}/{conn_parts['dbname']}?sslmode={conn_parts['sslmode']}"
+            )
         except Exception as e:
             logger.error(f"Error parsing connection string: {e}")
 else:
     logger.info("Connecting to local PostgreSQL server...")    
     sql_url = os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost/db")
 
-# Створення двигуна бази даних
+# Перевірка перед створенням підключення
+if not sql_url:
+    raise ValueError("Database connection URL is empty!")
+
+# Створення асинхронного двигуна
 engine = create_async_engine(sql_url, echo=True)
 SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
