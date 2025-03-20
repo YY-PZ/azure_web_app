@@ -14,6 +14,7 @@ logger = logging.getLogger("app")
 logger.setLevel(logging.INFO)
 
 sql_url = ""
+ssl_mode = "disable"
 if os.getenv("WEBSITE_HOSTNAME"):
     logger.info("Connecting to Azure PostgreSQL Flexible server...")
     env_connection_string = os.getenv("AZURE_POSTGRESQL_CONNECTIONSTRING")
@@ -28,8 +29,9 @@ if os.getenv("WEBSITE_HOSTNAME"):
             # Формуємо SQLAlchemy-сумісний URL
             sql_url = (
                 f"postgresql+asyncpg://{conn_parts['user']}:{quote_plus(conn_parts['password'])}"
-                f"@{conn_parts['host']}:{conn_parts['port']}/{conn_parts['dbname']}?sslmode={conn_parts['sslmode']}"
+                f"@{conn_parts['host']}:{conn_parts['port']}/{conn_parts['dbname']}"
             )
+            ssl_mode = conn_parts.get("sslmode", "disable")
         except Exception as e:
             logger.error(f"Error parsing connection string: {e}")
 else:
@@ -41,7 +43,7 @@ if not sql_url:
     raise ValueError("Database connection URL is empty!")
 
 # Створення асинхронного двигуна
-engine = create_async_engine(sql_url, echo=True)
+engine = create_async_engine(sql_url, echo=True, connect_args={"ssl": ssl_mode})
 SessionLocal = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
 Base = declarative_base()
 
@@ -62,6 +64,7 @@ async def get_db():
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(db: AsyncSession = Depends(get_db)):
+    logger.info("conect to root...")  
     result = await db.execute(select(Item))
     items = result.scalars().all()
     items_html = "".join(f"<li>{item.name}</li>" for item in items)
