@@ -6,8 +6,33 @@ anyio==4.9.0
     # via starlette
 asyncpg==0.30.0
     # via src (pyproject.toml)
+azure-core==1.32.0
+    # via
+    #   azure-cosmos
+    #   azure-identity
+    #   azure-storage-blob
+azure-cosmos==4.9.0
+    # via src (pyproject.toml)
+azure-identity==1.21.0
+    # via src (pyproject.toml)
+azure-storage-blob==12.25.1
+    # via src (pyproject.toml)
+certifi==2025.1.31
+    # via requests
+cffi==1.17.1
+    # via cryptography
+charset-normalizer==3.4.1
+    # via requests
 click==8.1.8
     # via uvicorn
+cryptography==44.0.2
+    # via
+    #   azure-identity
+    #   azure-storage-blob
+    #   msal
+    #   pyjwt
+dotenv==0.9.9
+    # via src (pyproject.toml)
 fastapi==0.115.11
     # via src (pyproject.toml)
 greenlet==3.1.1
@@ -15,13 +40,35 @@ greenlet==3.1.1
 h11==0.14.0
     # via uvicorn
 idna==3.10
-    # via anyio
+    # via
+    #   anyio
+    #   requests
+isodate==0.7.2
+    # via azure-storage-blob
+msal==1.32.0
+    # via
+    #   azure-identity
+    #   msal-extensions
+msal-extensions==1.3.1
+    # via azure-identity
+pycparser==2.22
+    # via cffi
 pydantic==2.10.6
     # via fastapi
 pydantic-core==2.27.2
     # via pydantic
+pyjwt==2.10.1
+    # via msal
+python-dotenv==1.1.0
+    # via dotenv
 python-multipart==0.0.20
     # via src (pyproject.toml)
+requests==2.32.3
+    # via
+    #   azure-core
+    #   msal
+six==1.17.0
+    # via azure-core
 sniffio==1.3.1
     # via anyio
 sqlalchemy==2.0.39
@@ -31,9 +78,15 @@ starlette==0.46.1
 typing-extensions==4.12.2
     # via
     #   anyio
+    #   azure-core
+    #   azure-cosmos
+    #   azure-identity
+    #   azure-storage-blob
     #   fastapi
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
+urllib3==2.3.0
+    # via requests
 uvicorn==0.34.0
     # via src (pyproject.toml)
